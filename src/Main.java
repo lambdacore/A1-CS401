@@ -24,11 +24,11 @@ public class Main {
         }
     }
 
-    public static QuickUnion buildConnections(ArrayList<ArrayList<String>> table) {
+    public static WeightedQuickUnion buildConnections(ArrayList<ArrayList<String>> table) {
         int numRows = table.size();
         int numCols = table.get(0).size();
 
-        QuickUnion uf = new QuickUnion(numRows * numCols + 2);
+        WeightedQuickUnion uf = new WeightedQuickUnion(numRows * numCols + 2);
 
         // Define a top index and bottom index that are connected to the entire top and bottom row.
         int topIndex = numRows * numCols;
