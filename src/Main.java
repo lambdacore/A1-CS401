@@ -1,71 +1,99 @@
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
 
-    public static void main(String[] args) {
-        String filePath = "/Users/lairos/IdeaProjects/SoilProblem/src/test.txt";
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line = reader.readLine();
-            String[] tokens = line.split(" ");
-            int n = tokens.length;
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+        String filePath = "/Users/lairos/IdeaProjects/A1-CS401/src/test.txt";
+        ArrayList<ArrayList<String>> table = readFile(filePath);
+        System.out.println(table);
+        WeightedQuickUnion uf = buildConnections(table);
 
-            WeightedQuickUnion uf = new WeightedQuickUnion(n * n + 1); // n*n cells plus a virtual top node
-            int top = n * n;
+        int top = table.size() * table.get(0).size();
+        int bottom = table.get(0).size() * table.size() + 1;
+        boolean isDrainable = uf.isConnected(top,bottom);
 
-            // connect the top node to the first row of cells
-            for (int j = 0; j < n; j++) {
-                if (tokens[j].equals("1")) {
-                    uf.union(top, j);
-                }
+        if(isDrainable){
+            System.out.println("Allow water to drain");
+        } else {
+            System.out.println("Don't allow water to drain");
+        }
+
+    }
+
+
+    public static WeightedQuickUnion buildConnections(ArrayList<ArrayList<String>> table) {
+        int numRows = table.size();
+        int numCols = table.get(0).size();
+
+        WeightedQuickUnion uf = new WeightedQuickUnion(numRows * numCols + 2);
+
+        // Define a top index and bottom index that are connected to the entire top and bottom row.
+        int topIndex = numRows * numCols;
+        int bottomIndex = numRows * numCols + 1;
+
+        // Step 1: Connect all of the cells in the first row to top.
+        for (int colIndex = 0; colIndex < numCols; colIndex++) {
+            if (table.get(0).get(colIndex).equals("1")) {
+                uf.union(topIndex, colIndex);
             }
+        }
 
-            // read the remaining rows and connect adjacent cells
-            for (int lines = 0; lines < n; lines++) {
-                line = reader.readLine();
-                if (line == null) {
-                    break;
+        // Step 2: Visit each cell starting from the first row,
+        // and connect it to a cell directly above (row - 1) or
+        // below (col - 1) if the cell has a "1" in it.
+        for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
+            for (int colIndex = 0; colIndex < numCols; colIndex++) {
+                int absIndex = getAbsIndex(rowIndex, numCols, colIndex);
+
+                if (rowIndex > 0) {
+                    int aboveIndex = getAbsIndex(rowIndex - 1, numCols, colIndex);
+                    if (table.get(rowIndex - 1).get(colIndex).equals("1")) {
+                        uf.union(absIndex, aboveIndex);
+                    }
                 }
-                System.out.println(line);
-                tokens = line.split(" ");
-
-                for (int j = 0; j < n; j++) {
-                    int index = lines * n + j;
-
-                    if (tokens[j].equals("1")) {
-                        if (j > 0 && tokens[j - 1].equals("1")) {
-                            uf.union(index, index - 1);
-                        }
-
-                        if (lines > 0 && tokens[j].equals("1")) {
-                            uf.union(index, index - n);
-                        }
-
-                        if (j < n - 1 && tokens[j + 1].equals("1")) {
-                            uf.union(index, index + 1);
-                        }
+                if (colIndex > 0) {
+                    int leftIndex = getAbsIndex(rowIndex, numCols, colIndex - 1);
+                    if (table.get(rowIndex).get(colIndex - 1).equals("1")) {
+                        uf.union(absIndex, leftIndex);
                     }
                 }
             }
-
-            // check if the soil allows water to drain or not
-            boolean allowDrainage = false;
-            for (int j = 0; j < n; j++) {
-                if (tokens[j].equals("1") && uf.isConnected(j, top)) {
-                    allowDrainage = true;
-                    break;
-                }
-            }
-
-            // print the result
-            if (allowDrainage) {
-                System.out.println("Allow water to drain");
-            } else {
-                System.out.println("Don't allow water to drain");
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading the input file: " + e.getMessage());
         }
+
+        // Step 3. Connect all of the cells in the last row to bottom.
+        for (int colIndex = 0; colIndex < numCols; colIndex++) {
+            if (table.get(numRows - 1).get(colIndex).equals("1")) {
+                int absIndex = getAbsIndex(numRows - 1, numCols, colIndex);
+                uf.union(bottomIndex, absIndex);
+            }
+        }
+        return uf;
+    }
+
+    public static int getAbsIndex(int rowIndex, int numCols, int colIndex) {
+        return (rowIndex * numCols) + colIndex;
+
+    }
+
+    public static ArrayList<ArrayList<String>> readFile(String filepath) throws FileNotFoundException, IOException {
+        ArrayList<ArrayList<String>> rows = new ArrayList<>();
+        BufferedReader reader = new BufferedReader(new FileReader(filepath));
+        String line;
+
+        while(true) {
+            line = reader.readLine();
+            if (line == null) break;
+
+            ArrayList<String> cols = new ArrayList<>();
+            cols.addAll(Arrays.asList(line.split(" ")));
+            rows.add(cols);
+        }
+
+        return rows;
     }
 }

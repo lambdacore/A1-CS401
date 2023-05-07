@@ -1,4 +1,3 @@
-
 public class QuickFind implements UnionFind{
 
 	private int[] id;
