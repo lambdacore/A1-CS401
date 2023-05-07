@@ -1,5 +1,5 @@
 
-public class WeightedQuickUnion extends QuickUnion{
+public class WeightedQuickUnion extends QuickUnion {
 	
 	private int[] size; // size of component for roots
 	public WeightedQuickUnion(int n) {

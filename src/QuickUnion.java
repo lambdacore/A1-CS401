@@ -49,10 +49,13 @@ public class QuickUnion implements UnionFind {
 		if (p < 0 || p >= id.length) {
 			throw new IllegalArgumentException("Index " + p + " is out of bounds");
 		}
-		while(id[p] != p) {
+		// The while loop first checks if the current element p is the root of its component (i.e., id[p] == p).
+		// If it is, the method returns p. Otherwise, it sets the parent of p to be the grandparent of p
+		// (i.e., id[p] = id[id[p]])
+		while (id[p] != p) {
+			id[p] = id[id[p]];
 			p = id[p];
 		}
-		
 		return p;
 	}
 }

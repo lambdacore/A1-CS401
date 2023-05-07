@@ -8,10 +8,10 @@ import java.util.Arrays;
 public class Main {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        String filePath = "/Users/lairos/IdeaProjects/A1-CS401/src/test.txt";
+        String filePath = "/Users/lairos/IdeaProjects/A1-CS401Test/src/test.txt";
         ArrayList<ArrayList<String>> table = readFile(filePath);
         System.out.println(table);
-        WeightedQuickUnion uf = buildConnections(table);
+        QuickUnion uf = buildConnections(table);
 
         int top = table.size() * table.get(0).size();
         int bottom = table.get(0).size() * table.size() + 1;
@@ -22,15 +22,13 @@ public class Main {
         } else {
             System.out.println("Don't allow water to drain");
         }
-
     }
 
-
-    public static WeightedQuickUnion buildConnections(ArrayList<ArrayList<String>> table) {
+    public static QuickUnion buildConnections(ArrayList<ArrayList<String>> table) {
         int numRows = table.size();
         int numCols = table.get(0).size();
 
-        WeightedQuickUnion uf = new WeightedQuickUnion(numRows * numCols + 2);
+        QuickUnion uf = new QuickUnion(numRows * numCols + 2);
 
         // Define a top index and bottom index that are connected to the entire top and bottom row.
         int topIndex = numRows * numCols;
@@ -48,6 +46,11 @@ public class Main {
         // below (col - 1) if the cell has a "1" in it.
         for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
             for (int colIndex = 0; colIndex < numCols; colIndex++) {
+                // If this cell isn't a 1, we don't connect it to anything.
+                if (!table.get(rowIndex).get(colIndex).equals("1")) {
+                    continue;
+                }
+
                 int absIndex = getAbsIndex(rowIndex, numCols, colIndex);
 
                 if (rowIndex > 0) {
